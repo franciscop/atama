@@ -68,3 +68,16 @@ Accordingly, these are the principles of Statux:
 - Single source of truth. Same as Redux, everything is stored into a tree.
 - Observable state. When you change a part of the tree, statux is listening for it and will update the rest of the website accordingly. It must be serializable at any point, so only basic types, Array and plain objects are allowed.
 - Changes from the root. Always trigger a change starting from `state.` and avoid any other kind of change. This prevents subtle bugs and issues.
+
+Advantages:
+
+- Intuitive to use. Just an object, modify it and listen to its changes natively.
+- Easy to set-up, no configuration needed and 0 boilerplate.
+- Integration with React to make it easier to use. Also works with plain javascript greatly (see index.html).
+
+Disadvantages:
+
+- `Proxy()` is only available on modern browsers. No IE at all.
+- A bit harder to track changes since more things are logged => harder to debug.
+- No dev tools built around it.
+- Early dev/test version.
