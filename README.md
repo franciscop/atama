@@ -75,7 +75,7 @@ state.$persist = true;
 
 ### Persist
 
-Keep the state even when the browser refreshes. This defaults to false, but it can be changed to true. An optional cache time can be set, in which situation if the user takes that long to return the state will be reset:
+Keep the state even when the browser refreshes using localStorage. Not preserved by default. An optional cache time can be set with the number of seconds, so if the user takes longer on visiting your page the state will be set from scratch:
 
 ```js
 // Configuration
@@ -83,16 +83,16 @@ state.$persist = true;   // Infinite preservation
 state.$persist = 3600;   // Cache it for 3600 seconds
 ```
 
-You have to use this before trying to access any data. Also, when setting new data make sure to take the default first:
+This option has to be set before accessing any kind of data. As usual, it is recommended that the initial data setting defaults to the old data as it could come from the cache or some other parts:
 
 ```js
 // Configure state to persist the data
 state.$persist = true;
 
-// This might be available already (coming from localstorage)
+// Avoid deleting the old one if any
 state.books = state.books || [];
 
-// Listen to the books (will be launched once on load as well)
+// Render once and listen to future changes
 state.$books(() => {
   console.log(state.books);
 });
