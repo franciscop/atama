@@ -75,15 +75,12 @@ state.$persist = true;
 
 ### Persist
 
-> Note: this option only works with a number or boolean!
-
 Keep the state even when the browser refreshes. This defaults to false, but it can be changed to true. An optional cache time can be set, in which situation if the user takes that long to return the state will be reset:
 
 ```js
 // Configuration
 state.$persist = true;   // Infinite preservation
 state.$persist = 3600;   // Cache it for 3600 seconds
-state.$persist = { cache: 3600 };   // Cache it for 3600 seconds
 ```
 
 
