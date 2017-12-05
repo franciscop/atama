@@ -83,6 +83,21 @@ state.$persist = true;   // Infinite preservation
 state.$persist = 3600;   // Cache it for 3600 seconds
 ```
 
+You have to use this before trying to access any data. Also, when setting new data make sure to take the default first:
+
+```js
+// Configure state to persist the data
+state.$persist = true;
+
+// This might be available already (coming from localstorage)
+state.books = state.books || [];
+
+// Listen to the books (will be launched once on load as well)
+state.$books(() => {
+  console.log(state.books);
+});
+```
+
 
 
 ### History
