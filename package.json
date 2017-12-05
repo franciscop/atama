@@ -1,6 +1,6 @@
 {
   "name": "statux",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A compact library to handle state and changes",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "state.min.js",

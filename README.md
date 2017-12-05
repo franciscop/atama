@@ -17,6 +17,9 @@ state.todos.push('Try statux! <3');
 Debugging made easy. Is your state not as you expected? Peek inside with its history:
 
 ```js
+// Start storing the history
+state.$history = true;
+
 state.todos = [];
 state.todos.push('I am pushed');
 state.todos.push('And I am pumped');
@@ -57,6 +60,46 @@ export default class TodoList extends Component {
   }
 }
 ```
+
+
+## Configuration
+
+All of the configuration should be set at the root level. They start by a dollar `$` and use a set method like this:
+
+```js
+// Start to record the history
+state.$history = true;
+```
+
+
+
+### Persistence
+
+> Note: this option only works with a number or boolean!
+
+Store the data among browser refresh. This defaults to false, but it can be changed to true. An optional cache time can be set, in which situation if the user takes that long to return the state will be reset:
+
+```js
+// Configuration
+state.$persist = true;   // Infinite preservation
+state.$persist = 3600;   // Cache it for 3600 seconds
+state.$persist = { cache: 3600 };   // Cache it for 3600 seconds
+```
+
+
+
+### History
+
+> Note: this option is not working yet!
+
+```js
+// Set the history options
+state.$history = true;
+state.$history = 1000;
+state.$history = { max: 1000 };
+state.$history = { methods: ['set', 'delete'] };
+```
+
 
 
 ## Why?
