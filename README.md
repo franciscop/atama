@@ -1,10 +1,10 @@
 # Statux
 
-A state manager. Simplify your Javascript development with all the modern features:
+A smart state manager with persistence and history:
 
 ```js
-// Initialize it with an empty todo list:
-state.todos = [];
+// Persist from previous session or init it:
+state.todos = state.todos || [];
 
 // Add a listener for changes on 'todos':
 state.$todos(list => console.log(list));
@@ -62,54 +62,55 @@ export default class TodoList extends Component {
 ```
 
 
-## Configuration
+## Persist state
 
-All of the configuration should be set at the root level. They start by a dollar `$` and use a set method like this:
-
-```js
-// Start to record the history
-state.$persist = true;
-```
-
-
-
-### Persist
-
-Keep the state even when the browser refreshes using localStorage. Not preserved by default. An optional cache time can be set with the number of seconds, so if the user takes longer on visiting your page the state will be set from scratch:
+State will persist data on [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). The initialization of each state property will determine whether you take advantage of it or not. This is a convention we strongly encourage you to follow:
 
 ```js
-// Configuration
-state.$persist = true;   // Infinite preservation
-state.$persist = 3600;   // Cache it for 3600 seconds
-```
-
-This option has to be set before accessing any kind of data. As usual, it is recommended that the initial data setting defaults to the old data as it could come from the cache or some other parts:
-
-```js
-// Configure state to persist the data
-state.$persist = true;
-
-// Avoid deleting the old one if any
+// PERSIST state
 state.books = state.books || [];
+state.user = state.user || {};
 
-// Render once and listen to future changes
-state.$books(() => {
-  console.log(state.books);
-});
+// DO NOT PERSIST state
+state.books = [];
+state.user = {};
+```
+
+If you are persisting **basic data types be careful with falsy values**. The convention here it to use a default value of what would be considered falsy in whatever your data type is:
+
+```js
+// PERFECT; convention is falsy by default
+state.display = state.display || false;
+state.count = state.count || 0;
+state.name = state.name || "";
+
+// ERROR; this is buggy
+state.display = state.display || true;
+state.count = state.count || 5;
+state.name = state.name || "Anonymous";
+```
+
+The reason to not use the latter is that a falsy value will be converted to the default even if set to false on purpose on the previous session. If you really want/need a non-null default value, you can do so with `typeof`:
+
+```js
+// ACCEPTABLE; but extra verbose
+state.display = typeof state.display === 'undefined' ? true : state.display;
+state.count = typeof state.count === 'undefined' ? 5 : state.count;
+state.name = typeof state.name === 'undefined' ? 'Anonymous' : state.name;
 ```
 
 
 
 ### History
 
-> Note: this option is not working yet; the history is available though
+> Note: history is just available but this option is not available yet. As of this dev version history will leak memory, since it will grow unbounded:
 
 ```js
-// Set the history options
+// Infinite history records; leaks memory
 state.$history = true;
+
+// Maximum number of history entries
 state.$history = 1000;
-state.$history = { max: 1000 };
-state.$history = { methods: ['set', 'delete'] };
 ```
 
 
@@ -128,11 +129,12 @@ Advantages:
 
 - Intuitive to use. Just an object, modify it and listen to its changes natively.
 - Easy to set-up, no configuration needed and 0 boilerplate.
-- Integration with React to make it easier to use. Also works with plain javascript greatly (see index.html).
+- Integration with React to make it easier to use. Also works with plain javascript greatly (see `/examples`).
+- Detailed CRUD history for easier debugging.
 
 Disadvantages:
 
 - `Proxy()` is only available on modern browsers. No IE at all.
-- A bit harder to track changes since more things are logged => harder to debug.
+- The history is not *named* by event, just by data fragment access.
 - No dev tools built around it.
 - Early dev/test version.

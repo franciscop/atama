@@ -1,6 +1,5 @@
 const listeners = {};
 const history = [];
-let persist = !!window.localStorage.getItem('_____state');
 
 const basicTypes = ['boolean', 'number', 'null', 'undefined', 'string'];
 
@@ -49,25 +48,6 @@ const getProxy = (stack = []) => (target, property) => {
 // Set values
 const setProxy = (stack = []) => (target, property, value) => {
 
-  if (property === '$persist') {
-    if (typeof value === 'boolean') {
-      value = value ? Infinity : 0;
-    }
-    persist = value;
-    if (!persist) {
-      return localStorage.removeItem("_____state");
-    }
-    const stored = JSON.parse(localStorage.getItem('_____state') || "{}");
-    const current = new Date().getTime() / 1000;
-    if (!stored.time || (current - stored.time) > persist) {
-      return localStorage.removeItem("_____state");
-    }
-    for (let key in stored.data) {
-      state[key] = stored.data[key];
-    }
-    return true;
-  }
-
   if (/^\$/.test(property)) {
     throw new Error('The keys that start by $ are reserved and should not be set manually.');
   }
@@ -81,12 +61,10 @@ const setProxy = (stack = []) => (target, property, value) => {
   // First of all set it in the beginning
   target[property] = value;
 
-  if (persist) {
-    localStorage.setItem('_____state', JSON.stringify({
-      time: Math.floor(new Date().getTime() / 1000),
-      data: state
-    }));
-  }
+  localStorage.setItem('_____state', JSON.stringify({
+    time: Math.floor(new Date().getTime() / 1000),
+    data: state
+  }));
 
   const proxify = (value, stack) => {
     if (basicTypes.includes(typeof value)) {
@@ -157,12 +135,10 @@ const delProxy = (stack = []) => (target, property) => {
   // First of all set it in the beginning
   delete target[property];
 
-  if (persist) {
-    localStorage.setItem('_____state', JSON.stringify({
-      time: Math.floor(new Date().getTime() / 1000),
-      data: state
-    }));
-  }
+  localStorage.setItem('_____state', JSON.stringify({
+    time: Math.floor(new Date().getTime() / 1000),
+    data: state
+  }));
 
   // Create a list of all the possible listeners so far in the stack
   // state.$card, state.card.$user, state.card.user.$sth, etc
@@ -188,5 +164,16 @@ const state = new Proxy({}, {
   set: setProxy(),
   deleteProperty: delProxy()
 });
+
+
+// Retrieve the persisted data
+const stored = JSON.parse(localStorage.getItem('_____state') || "{}");
+
+// If there was no data to be persisted
+if (stored && stored.data) {
+  for (let key in stored.data) {
+    state[key] = stored.data[key];
+  }
+}
 
 export default state;

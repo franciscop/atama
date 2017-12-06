@@ -1,7 +1,7 @@
 {
   "name": "statux",
-  "version": "0.2.0",
-  "description": "A compact library to handle state and changes",
+  "version": "0.3.0",
+  "description": "A smart state manager with persistence and history",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "state.min.js",
   "repository" : "franciscop/state",
