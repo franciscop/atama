@@ -45,7 +45,7 @@
         ultra: { visible:  300000, cost:  1000000, add:  100000 },
         maxi:  { visible: 3000000, cost: 10000000, add: 1000000 }
       }} = {}) => {
-
+        delete dom['.visible:not(#basic)'].class.visible;
         state.clicks = clicks;
         state.perks = perks;
         state.extras = extras;
@@ -80,7 +80,9 @@
           const up = str => str[0].toUpperCase() + str.slice(1);
           const cost = round(state.extras[key].cost);
           dom.id[key].html = `${up(key)} clicker [${cost}] (${state.perks[key] || 0})`;
-          dom.id[key].class.visible = state.clicks >= state.extras[key].visible;
+          if (state.clicks >= state.extras[key].visible) {
+            dom.id[key].class = 'visible';
+          }
           dom.id[key][0].disabled = state.extras[key].cost > state.clicks;
         }
       });
