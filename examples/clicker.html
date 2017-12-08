@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Clicker</title>
+  <style media="screen">
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    button {
+      cursor: pointer;
+      display: none;
+    }
+    .visible {
+      display: block;
+    }
+    #reset {
+      float: right;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="clicks"></h1>
+
+  <button id="reset">Reset</button>
+  <button id="basic" class="visible">Click</button>
+
+  <div class="buttons"></div>
+
+
+  <script src="https://unpkg.com/superdom@1.3.0/superdom.min.js"></script>
+  <script src="/state.min.js"></script>
+  <script>
+      const init = ({ clicks = 0, perks = {}, extras = {
+        auto:  { visible:       3, cost:       10, add:       1 },
+        super: { visible:      30, cost:      100, add:      10 },
+        mega:  { visible:     300, cost:     1000, add:     100 },
+        giga:  { visible:    3000, cost:    10000, add:    1000 },
+        tera:  { visible:   30000, cost:   100000, add:   10000 },
+        ultra: { visible:  300000, cost:  1000000, add:  100000 },
+        maxi:  { visible: 3000000, cost: 10000000, add: 1000000 }
+      }} = {}) => {
+
+        state.clicks = clicks;
+        state.perks = perks;
+        state.extras = extras;
+      };
+      init(state);
+
+      const round = number => {
+        if (number >= 9900000000) return '' + parseInt(number / 1000000000) + 'B';
+        if (number >= 9900000) return '' + parseInt(number / 1000000) + 'M';
+        if (number >= 9900) return '' + parseInt(number / 1000) + 'K';
+        return '' + parseInt(number);
+      };
+
+      dom.class.buttons.html = Object.keys(state.extras).map(one => {
+        return `<button id=${one}></button>`;
+      }).join('');
+
+      Object.keys(state.extras).forEach(id => {
+        dom.id[id].handle.click = e => {
+          if (state.clicks < state.extras[id].cost) return;
+          state.clicks -= state.extras[id].cost;
+          state.extras[id].cost = state.extras[id].cost * 1.2;
+          state.perks[id] = (state.perks[id] || 0) + 1;
+        };
+      });
+
+      state.$clicks(() => {
+        dom.title.html = round(state.clicks);
+        dom.class.clicks.html = round(state.clicks);
+        if (state.clicks > 0) dom.id.reset.class = 'visible';
+        for (let key in state.extras) {
+          const up = str => str[0].toUpperCase() + str.slice(1);
+          const cost = round(state.extras[key].cost);
+          dom.id[key].html = `${up(key)} clicker [${cost}] (${state.perks[key] || 0})`;
+          dom.id[key].class.visible = state.clicks >= state.extras[key].visible;
+          dom.id[key][0].disabled = state.extras[key].cost > state.clicks;
+        }
+      });
+
+      dom.id.reset.handle.click = e => init();
+      dom.id.basic.handle.click = e => state.clicks++;
+
+      // Control how many times per second it refreshes
+      (function loop (fps = 10) {
+        Object.keys(state.perks).forEach(key => {
+          state.clicks = state.clicks + state.extras[key].add * state.perks[key] / fps;
+        });
+        setTimeout(() => loop(fps), 1000 / fps);
+      })();
+
+
+  </script>
+</body>
+</html>
