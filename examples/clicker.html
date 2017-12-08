@@ -76,7 +76,7 @@
       });
 
       state.$clicks(() => {
-        const scale = ${1 - Math.exp(- 0.01 * state.clicks - 0.5)};
+        const scale = 1 - Math.exp(- 0.01 * state.clicks - 0.5);
         document.querySelector('h1').style.transform = `scale(${scale})`;
         dom.title.html = round(state.clicks);
         dom.class.clicks.html = round(state.clicks);
