@@ -7,7 +7,7 @@ describe('Basic definition', () => {
     state._____reset;
   });
 
-  it('is a function', () => {
+  it('is an object', () => {
     console.log(state);
     expect(state instanceof Object).toBe(true);
   });
@@ -43,6 +43,14 @@ describe('listeners', () => {
     expect(changed).toBe(1);
   });
 
+  it('has a very generic listener', () => {
+    state.bbb = 0;
+    let changed = 0;
+    state.$(() => changed++);
+    state.bbb = 1;
+    expect(changed).toBe(2);
+  });
+
   it('Changes it first then triggers the CB', () => {
     state.id = 0;
     let changed = false;
@@ -71,6 +79,29 @@ describe('listeners', () => {
     $frag.sub.id = 10;
     expect(changed).toBe(2);
     expect(state.fragment.sub.id).toBe(10);
+  });
+
+  it('triggers from an state callback', () => {
+    state.frag = [{id: 0}];
+    let changed = 0;
+    let modify;
+    state.$frag(items => {
+      modify = () => {
+        items[0].id = 10;
+      };
+      changed++;
+    });
+
+    // First it only triggers once
+    expect(changed).toBe(1);
+    expect(state.frag[0].id).toBe(0);
+
+    // Then we trigger an internal change
+    modify();
+
+    // Finally check the modified value
+    expect(changed).toBe(2);
+    expect(state.frag[0].id).toBe(10);
   });
 
   it('triggers from an array fragment', () => {
