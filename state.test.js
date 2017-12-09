@@ -8,14 +8,17 @@ describe('Basic definition', () => {
   });
 
   it('is an object', () => {
-    console.log(state);
     expect(state instanceof Object).toBe(true);
+  });
+
+  it('can be logged', () => {
+    console.log(state);
   });
 
   it('starts empty', () => {
     expect(Object.keys(state)).toEqual([]);
     expect(state._____listeners).toEqual({});
-    expect(state._____history).toEqual([]);
+    expect(state._____history instanceof Array).toBe(true);
   });
 
   it('is initialized with an empty object', () => {

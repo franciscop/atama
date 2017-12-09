@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Stack Tracing</title>
+</head>
+<body>
+
+
+  <script src="../state.min.js"></script>
+  <script>
+    state.counter = [];
+    const init = () => {
+      state.counter.push('Hello!');
+      console.log(state.counter);
+    };
+    init();
+    console.log(state._____history.slice(0, 10));
+  </script>
+</body>
+</html>

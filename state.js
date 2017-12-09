@@ -1,15 +1,13 @@
+// The current total history
+import history from './src/history';
+
+// Where the different listeners are attached
 const listeners = {};
-const history = [];
 
 const basicTypes = ['boolean', 'number', 'null', 'undefined', 'string'];
 
 // Receives the ancestor stack and returns the Proxy() handler
-const getProxy = (stack = []) => (target, property) => {
-
-  // Plain access, just return it
-  if (property in target) {
-    return target[property];
-  }
+const _____getProxy = (stack = []) => (target, property) => {
 
   // To allow logging the state: https://github.com/nodejs/node/issues/10731
   if (typeof property === 'symbol') {
@@ -19,6 +17,15 @@ const getProxy = (stack = []) => (target, property) => {
   // Special, internal use
   if ('_____history' === property) { return history; }
   if ('_____listeners' === property) { return listeners; }
+
+  // Create the key for reading
+  const key = [...stack.map(one => one.property), property].join('.');
+
+  // Plain access, just return it
+  if (property in target) {
+    history.add({ type: 'read', key });
+    return target[property];
+  }
 
   // If it is a listener return a function to accept the callback
   if (/^\$/.test(property)) {
@@ -44,9 +51,8 @@ const getProxy = (stack = []) => (target, property) => {
   }
 };
 
-
 // Set values
-const setProxy = (stack = []) => (target, property, value) => {
+const _____setProxy = (stack = []) => (target, property, value) => {
 
   if (/^\$/.test(property)) {
     throw new Error('The keys that start by $ are reserved and should not be set manually.');
@@ -56,7 +62,10 @@ const setProxy = (stack = []) => (target, property, value) => {
   }
 
   const key = [...stack.map(one => one.property), property].join('.');
-  history.push({ key, value, explicit: property !== 'length', time: new Date().getTime() });
+
+  // Log it into the history
+  const type = typeof target[property] === 'undefined' ? 'create' : 'update';
+  history.add({ type, key, value });
 
   // First of all set it in the beginning
   target[property] = value;
@@ -69,7 +78,7 @@ const setProxy = (stack = []) => (target, property, value) => {
   }
 
   const proxify = (value, stack) => {
-    if (basicTypes.includes(typeof value)) {
+    if (basicTypes.includes(typeof value) || value === null) {
       return value;
     }
     if (Array.isArray(value)) {
@@ -85,9 +94,9 @@ const setProxy = (stack = []) => (target, property, value) => {
     }
 
     return new Proxy(value, {
-      get: getProxy(stack),
-      set: setProxy(stack),
-      deleteProperty: delProxy(stack)
+      get: _____getProxy(stack),
+      set: _____setProxy(stack),
+      deleteProperty: _____delProxy(stack)
     });
   };
 
@@ -136,7 +145,7 @@ const setProxy = (stack = []) => (target, property, value) => {
   return true;
 };
 
-const delProxy = (stack = []) => (target, property) => {
+const _____delProxy = (stack = []) => (target, property) => {
 
   if (/^\$/.test(property)) {
     throw new Error('The keys that start by $ are reserved and should not be set manually.');
@@ -146,7 +155,7 @@ const delProxy = (stack = []) => (target, property) => {
   }
 
   const key = [...stack.map(one => one.property), property].join('.');
-  history.push({ key, type: 'delete', explicit: property !== 'length', time: new Date().getTime() });
+  history.add({ type: 'delete', key });
 
   // First of all set it in the beginning
   delete target[property];
@@ -178,9 +187,9 @@ const delProxy = (stack = []) => (target, property) => {
 
 // Main state function. Has to be defined here to be accessible inside
 const state = new Proxy({}, {
-  get: getProxy(),
-  set: setProxy(),
-  deleteProperty: delProxy()
+  get: _____getProxy(),
+  set: _____setProxy(),
+  deleteProperty: _____delProxy()
 });
 
 
