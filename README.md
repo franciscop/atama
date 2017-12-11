@@ -1,5 +1,7 @@
 # Statux
 
+[![[Status]](https://circleci.com/gh/franciscop/status.svg?style=shield)](https://circleci.com/gh/franciscop/status)
+
 A smart state manager with persistence and history:
 
 ```js
