@@ -23,7 +23,7 @@ state.todos = [];
 state.todos.push('I am pushed');
 state.todos.push('And I am pumped');
 
-console.log(state._____history.filter(s => s.explicit && s.type === 'set').slice(10));
+console.log(state._____history.type('set').slice(10));
 // [
 //   { key: 'todos.0', value: 'I am pushed', ...},
 //   { key: 'todos.1', value: 'And I am pumped', ...},
