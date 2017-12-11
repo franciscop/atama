@@ -1,21 +1,27 @@
 {
   "name": "statux",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A smart state manager with history and persistence",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "state.min.js",
-  "repository" : "franciscop/state",
+  "repository": "franciscop/state",
   "scripts": {
-    "build": "rollup state.js -o ./temp/state.js --name state --output.format umd && uglifyjs ./temp/state.js -o state.min.js --source-map-inline",
+    "build": "rollup src/state.js -o state.js --name state --output.format umd && uglifyjs state.js -o state.min.js --source-map-inline",
     "gzip": "gzip -c state.min.js | wc -c && echo 'bytes' # Only for Unix",
     "test": "jest --coverage --forceExit"
   },
-  "keywords": ["state", "javascript", "react", "statux", "proxy", "listener", "change"],
+  "keywords": [
+    "state", "javascript", "react", "statux", "proxy", "listener", "change"
+  ],
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-jest": "^21.2.0",
-    "babel-preset-env": "^1.6.1"
+    "babel-preset-env": "^1.6.1",
+    "jest-localstorage-mock": "^2.1.0"
+  },
+  "jest": {
+    "setupFiles": [ "jest-localstorage-mock" ]
   }
 }

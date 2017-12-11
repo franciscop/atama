@@ -24,15 +24,17 @@
       <button>Add</button>
     </form>
 
-    <script src="../state.min.js" type="text/javascript"></script>
+    <script src="../state.js" type="text/javascript"></script>
     <script type="text/javascript">
       // Define the initial state
-      state.todo = [];
+      state.todo = state.todo || [];
       state.filter = 'SHOW_ALL';
 
       // Generate some data
-      for (let i = 0; i < 5; i++) {
-        state.todo.push({ title: `Pushed ${1 + i}`, done: i % 2 === 1 });
+      if (!state.todo.length) {
+        for (let i = 0; i < 5; i++) {
+          state.todo.push({ title: `Pushed ${1 + i}`, done: i % 2 === 1 });
+        }
       }
 
       const render = (one, i) => `

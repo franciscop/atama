@@ -8,16 +8,17 @@
 </head>
 <body>
 
+  <h1>Open the console</h1>
 
-  <script src="../state.min.js"></script>
+  <script src="../state.js"></script>
   <script>
-    state.counter = [];
+    state.items = [];
     const init = () => {
-      state.counter.push('Hello!');
-      console.log(state.counter);
+      state.items.push('Hello!');
+      console.log('Items:', state.items);
     };
     init();
-    console.log(state._____history.slice(0, 10));
+    console.log('History:', state._____history.slice(-20));
   </script>
 </body>
 </html>

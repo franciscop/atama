@@ -1,98 +1,7 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.state = factory());
-}(this, (function () { 'use strict';
-
-const History = function (initial = []) {
-  this.push(...initial);
-};
-
-// It is an array
-History.prototype = new Array;
-
-// Limit the amout of items to preserve in the history
-History.prototype.limit = Infinity;
-
-// Depth: Remove the latest 2 ones: one for history.add(), and another for setProxy
-History.prototype.clean = ({ stack = '\nStack not available for ' + navigator.userAgent } = {}) => {
-
-  // Slice: remove the history entry
-  // Filter: no empty ones, and no internal ones
-  return stack.split('\n').slice(1).filter(one => one).filter(trace => !/^_____/.test(trace)).filter(trace => !/^persistence./.test(trace));
-};
-
-
-History.prototype.add = function (entry) {
-
-  // This is to order them in the console
-  this.push(Object.assign({}, entry, {
-    timestamp: new Date().getTime(),
-    stack: this.clean(new Error(), entry.key === 'length'),
-  }, entry));
-
-  if (this.length > this.limit) {
-    this.splice(this.length - this.limit);
-  }
-
-  return this;
-};
-
-// history.type('create|read|update|delete').filter('')
-History.prototype.type = function (type) {
-  return new History(this.filter(one => one.type === type));
-};
-
-// history.key('name|name.subname|name.sub.name')
-History.prototype.key = function (key) {
-  const current = one => {
-    const keyLength = key.split('.').length;
-    return one.key.split('.').slice(0, keyLength).join('.') === key;
-  };
-  return new History(this.filter(current));
-};
-
-History.prototype.latest = function (ms = Infinity) {
-  return new History(this.filter(one => new Date().getTime() - one.timestamp < ms));
-};
-
-var history = new History();
-
-const persistence = {};
-
-// The name of the key to save in localStorage
-const key = '_____state';
-
-// Make sure we can work with localStorage
-const available = () => typeof window !== 'undefined' && 'localStorage' in window;
-
-// Read the information from localStorage and store it into the state object
-persistence.load = (state) => {
-  if (!available()) return;
-
-  // Try to retrieve it from localStorage or default to an empty object
-  const stored = JSON.parse(localStorage.getItem(key) || "{}");
-
-  // No data was stored => return
-  if (!stored.data) return;
-
-  // Store it into our local JSON
-  for (let key in stored.data) {
-    state[key] = stored.data[key];
-  }
-};
-
-// Save the data into localStorage for later retrieval
-persistence.save = (data) => {
-  if (!available()) return;
-
-  const timestamp = new Date().getTime();
-  const serialized = JSON.stringify({ timestamp, data });
-
-  localStorage.setItem(key, serialized);
-};
-
 // The current total history
+import history from './history';
+import local from './local';
+
 // Where the different listeners are attached
 const listeners = {};
 
@@ -164,7 +73,7 @@ const _____setProxy = (stack = []) => (target, property, value) => {
   target[property] = value;
 
   // Make it persist into the localStorage
-  persistence.save(state);
+  local.save(state);
 
   const proxify = (value, stack) => {
     if (basicTypes.includes(typeof value) || value === null) {
@@ -248,7 +157,7 @@ const _____delProxy = (stack = []) => (target, property) => {
   // First of all set it in the beginning
   delete target[property];
 
-  persistence.save(state);
+  local.save(state);
 
   // Create a list of all the possible listeners so far in the stack
   // state.$card, state.card.$user, state.card.user.$sth, etc
@@ -279,7 +188,7 @@ const _____delProxy = (stack = []) => (target, property) => {
   });
 
   return true;
-};
+}
 
 // Main state function. Has to be defined here to be accessible inside
 const state = new Proxy({}, {
@@ -290,8 +199,6 @@ const state = new Proxy({}, {
 
 
 // Retrieve the persisted data
-persistence.load(state);
+local.load(state);
 
-return state;
-
-})));
+export default state;

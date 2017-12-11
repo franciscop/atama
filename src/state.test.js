@@ -1,12 +1,6 @@
 import state from './state';
 
 describe('Basic definition', () => {
-
-  // Reset it on each test
-  beforeEach(() => {
-    state._____reset;
-  });
-
   it('is an object', () => {
     expect(state instanceof Object).toBe(true);
   });
@@ -33,11 +27,6 @@ describe('Basic definition', () => {
 });
 
 describe('listeners', () => {
-  // Reset it on each test
-  beforeEach(() => {
-    state._____reset;
-  });
-
   it('Can listen to simple changes', () => {
     state.aaa = 0;
     let changed = false;
@@ -210,6 +199,33 @@ describe('Works with React', () => {
     expect(changed).toBe(1);
     expect(stat.__state).toBeGreaterThan(0);
     expect(stat.__state).toBeLessThan(1);
+  });
+
+  it('triggers on change from the root', () => {
+    state.react = {};
+    let changed = 0;
+    let stat;
+    state.$({ setState: (state) => { changed++; stat = state; } });
+    state.react.id = 10;
+    expect(changed).toBe(1);
+    expect(stat.__state).toBeGreaterThan(0);
+    expect(stat.__state).toBeLessThan(1);
+  });
+
+  it('triggers on change from the root', () => {
+    state.reactb = {};
+    let changed = 0;
+    state.$({ setState: () => { changed++; } });
+    delete state.reactb;
+    expect(changed).toBe(1);
+    expect(state.reactb).toBe(undefined);
+  });
+
+  it('triggers on change from the root', () => {
+    delete state._____listeners._____root;
+    state.reactc = {};
+    delete state.reactc;
+    expect(state.reactc).toBe(undefined);
   });
 });
 
