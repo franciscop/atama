@@ -1,6 +1,6 @@
 # Statux
 
-[![[Status]](https://circleci.com/gh/franciscop/status.svg?style=shield)](https://circleci.com/gh/franciscop/status)
+[![[Status]](https://circleci.com/gh/franciscop/state.svg?style=shield)](https://circleci.com/gh/franciscop/state)
 
 A smart state manager with persistence and history:
 
