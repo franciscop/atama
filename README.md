@@ -31,6 +31,19 @@ console.log(state._____history.type('create').slice(10));
 ```
 
 
+## Install
+
+```
+$ npm install statux
+```
+
+Or with [the CDN unpkg](https://unpkg.com/statux@0/state.min.js):
+
+```html
+<script src="https://unpkg.com/statux@0/state.min.js"></script>
+```
+
+
 
 ## React
 
