@@ -39,7 +39,7 @@ Using npm:
 $ npm install statux
 ```
 
-Then importe it into your code to use it:
+Then import it into your code to use it:
 
 ```js
 // New syntax
