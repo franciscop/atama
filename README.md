@@ -33,11 +33,23 @@ console.log(state._____history.type('create').slice(10));
 
 ## Install
 
+Using npm:
+
 ```
 $ npm install statux
 ```
 
-Or with [the CDN unpkg](https://unpkg.com/statux@0/state.min.js):
+Then importe it into your code to use it:
+
+```js
+// New syntax
+import state from 'statux';
+
+// Old syntax
+const state = require('statux');
+```
+
+Or with [the CDN unpkg](https://unpkg.com/statux@0/state.min.js), which doesn't need you to import it manually since it'll define the global `state`:
 
 ```html
 <script src="https://unpkg.com/statux@0/state.min.js"></script>
