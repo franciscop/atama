@@ -1,10 +1,10 @@
 {
-  "name": "statux",
-  "version": "0.6.0",
+  "name": "atama",
+  "version": "0.1.0",
   "description": "A smart state manager with history and persistence",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "state.min.js",
-  "repository": "franciscop/state",
+  "repository": "franciscop/atama",
   "scripts": {
     "build": "rollup src/state.js -o state.js --name state --output.format umd && uglifyjs state.js -o state.min.js --source-map-inline",
     "gzip": "gzip -c state.min.js | wc -c && echo 'bytes' # Only for Unix",
