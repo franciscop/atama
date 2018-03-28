@@ -1,19 +1,185 @@
-# Statux
+# Atama.js
 
-[![[Status]](https://circleci.com/gh/franciscop/state.svg?style=shield)](https://circleci.com/gh/franciscop/state)
+[![[Status]](https://circleci.com/gh/franciscop/atama.svg?style=shield)](https://circleci.com/gh/franciscop/atama)
 
-A smart state manager with persistence and history:
+> 頭|あたま|atama: head, the part where the brain is.
+
+A smart state manager for React or plain Javascript:
 
 ```js
-// Persist from previous session or init it:
-state.todos = state.todos || [];
+import { connect } from 'atama';
 
-// Add a listener for changes on 'todos':
-state.$todos(list => console.log(list));
+const initial = { counter: 0 };
 
-// Change it and trigger the listener:
-state.todos.push('Try statux! <3');
+export default connect(initial)(({ state }) => (
+  <button onClick={e => {state.counter++}}>
+    Add one! {state.counter}
+  </button>
+));
 ```
+
+Atama.js is focused on:
+
+- **productivity** because state should just work: a really smooth learning curve while allowing for more advanced patterns.
+- **testing** to avoid things going wrong: writing a test is trivial and you can test very advanced features and mutations.
+- **debugging** for when things go wrong: detailed CRUD history is stored to a great detail on development.
+
+
+
+## Guides and examples
+
+Here are of the most common patterns with React and how to solve them with Atama.js.
+
+A big note if you come from Redux, [one of the principles]() of Atama.js is exactly the opposite of Redux regarding the state: Always Be Mutating.
+
+
+
+### Events
+
+Modify the counter when the button is clicked:
+
+```js
+// Counter.js
+import { connect } from 'atama';
+
+// Initial (default) data structure
+const init = { counter: 0 };
+
+// Pass the global state defaulting to the init state when undefined
+export default connect(init)(({ state }) => (
+  <div>
+    <p>Counter: {state.counter}</p>
+    <button onClick={e => { state.counter++; }}>Click me!</button>
+  </div>
+));
+```
+
+
+
+### AJAX loading data
+
+Loading data when a component is loaded. No error handling:
+
+```js
+import { connect } from 'atama';
+
+// Load the items asynchronously when starting the component
+const init = async ({ state }) => {
+  state.items = [];
+  state.items = await fetch('/items/').then(res => res.json());
+};
+
+// Initialize the global state, but this time with a function!
+export default connect(init)(({ state }) => {
+  <ul>
+    {state.items.map(item => <li>{item}</li>)}
+  </ul>
+});
+```
+
+With error handling, the init function would become:
+
+```js
+// This function will be called when initializing the component
+const init = async ({ state }) => {
+  state.items = [];
+
+  // If there was an error render it as the first item
+  const onError = err => { state.items = [err.message]; };
+
+  // Load the items through AJAX asynchronously
+  state.items = await fetch('/items/').then(res => res.json()).catch(onError);
+};
+```
+
+
+
+### Testing
+
+To test a component, just import it straight from the exported file, with `connect()` and all. For the previous Counter.js:
+
+```js
+// Counter.js
+import { connect } from 'atama';
+
+// Initial (default) data structure
+const init = { counter: 0 };
+
+// Pass the global state defaulting to the init state when undefined
+export default connect(init)(({ state }) => (
+  <div>
+    <p>Counter: {state.counter}</p>
+    <button onClick={e => { state.counter++; }}>Click me!</button>
+  </div>
+));
+```
+
+You can test it with [Enzyme](https://github.com/airbnb/enzyme) and [Jest](https://facebook.github.io/jest/) by creating a small piece of state and passing it manually like this:
+
+```js
+// Counter.test.js
+import Counter from './Counter';
+import { shallow } from 'enzyme';
+
+describe('Counter.js', () => {
+  it('loads the default state properly', () => {
+    const state = {};
+    const rendered = shallow(<Counter state={state} />).text();
+    expect(state.counter).toBe(0);
+    expect(rendered).toMatch('Counter: 0');
+  });
+
+  it('loads the default state properly', () => {
+    const state = { counter: 0 };
+    const button = shallow(<Counter state={state} />).find('button');
+    expect(state.counter).toBe(0);
+
+    button.simulate('click');
+    expect(state.counter).toBe(1);
+
+    button.simulate('click');
+    expect(state.counter).toBe(2);
+  });
+});
+```
+
+
+
+### Trivia
+
+I am learning Japanese and I know three expressions so far with 頭:
+
+- 頭がいい: smart, intelligent.
+- 頭が痛い: my head hurts (after too much Redux). Luckily it will never hurt again with Atama.js.
+- 頭が悪い: stupid. Not like you <3
+
+
+
+
+## API
+
+The full, detailed list of all of the parts that Atama.js provides and their applications.
+
+### state
+
+### local
+
+### listen()
+
+### connect()
+
+### bind()
+
+### init()
+
+### merge()
+
+### freeze()
+
+
+
+
+
 
 
 Debugging made easy. Is your state not as you expected? Peek inside with its history:
