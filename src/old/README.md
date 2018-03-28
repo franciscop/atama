@@ -1,6 +1,6 @@
 # Atama.js
 
-> Note: this is early work in progress! This documentation describes an API that is not yet available.
+> Note: this is early work in progress! This documentation describes an API that is not yet available .
 
 [![[Status]](https://circleci.com/gh/franciscop/atama.svg?style=shield)](https://circleci.com/gh/franciscop/atama)
 
@@ -14,7 +14,7 @@ import { connect } from 'atama';
 const initial = { counter: 0 };
 
 export default connect(initial)(({ state }) => (
-  <button onClick={e => {state.counter++}}>
+  <button onClick={e => state.counter++}>
     Add one! {state.counter}
   </button>
 ));
@@ -22,17 +22,36 @@ export default connect(initial)(({ state }) => (
 
 Atama.js is focused on:
 
-- **productivity** because state should just work: a really smooth learning curve while allowing for more advanced patterns.
-- **testing** to avoid things going wrong: writing a test is trivial and you can test very advanced features and mutations.
-- **debugging** for when things go wrong: detailed CRUD history is stored to a great detail on development.
+- **productivity** because state just works: smooth learning curve while allowing for more advanced patterns.
+- **testing** to avoid things going wrong: easy to write tests for all kind of events, see [Testing](#testing).
+- **debugging** for when things go wrong: detailed CRUD history is stored to a great detail on development, see [History](#history).
 
 
 
-## Guides and examples
+## Guides
 
 Here are of the most common patterns with React and how to solve them with Atama.js.
 
 A big note if you come from Redux, [one of the principles]() of Atama.js is exactly the opposite of Redux regarding the state: Always Be Mutating.
+
+
+
+### Getting started
+
+To install Atama.js in your project use npm or yarn:
+
+```bash
+npm install atama
+```
+
+Then include it in any project where you want to use it. Since `atama` is really a group of functions, you can do that either way:
+
+```js
+import atama from 'atama';
+import { connect, ...atama } from 'atama';
+```
+
+The main function and most useful for React is `connect()`, so make sure to [read the documentation of `connect()`](#connect-). For plain-text javascript, the equivalent is `listen()`.
 
 
 

@@ -6,7 +6,7 @@ describe('Basic definition', () => {
   });
 
   it('can be logged', () => {
-    console.log(state);
+    require('util').inspect(state);
   });
 
   it('starts empty', () => {

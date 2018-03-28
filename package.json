@@ -6,11 +6,12 @@
   "main": "state.min.js",
   "repository": "franciscop/atama",
   "scripts": {
-    "build": "rollup src/state.js -o state.js --name state --output.format umd && uglifyjs state.js -o state.min.js --source-map-inline",
+    "build": "rollup src/old/state.js -o state.js --name state --output.format umd && uglifyjs state.js -o state.min.js --source-map-inline",
     "gzip": "gzip -c state.min.js | wc -c && echo 'bytes' # Only for Unix",
     "test": "jest --coverage --forceExit"
   },
   "keywords": [
+    "atama",
     "state",
     "javascript",
     "react",
