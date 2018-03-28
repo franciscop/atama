@@ -1,5 +1,7 @@
 # Atama.js
 
+> Note: this is early work in progress! This documentation describes an API that is not yet available.
+
 [![[Status]](https://circleci.com/gh/franciscop/atama.svg?style=shield)](https://circleci.com/gh/franciscop/atama)
 
 > 頭|あたま|atama: head, the part where the brain is.
