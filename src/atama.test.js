@@ -9,6 +9,13 @@ describe('load', () => {
 });
 
 
+describe('common cases', () => {
+  it('can load the initial state', () => {
+
+  });
+});
+
+
 describe('listen', () => {
   it('it can listen to anything', () => {
     let list = false;
