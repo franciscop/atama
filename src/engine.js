@@ -1,41 +1,50 @@
 // The current total history
-import history from './old/history';
+// import history from './old/history';
 
 // Where the different listeners are attached
 const listeners = [];
 const detached = [];
 
-const basicTypes = ['boolean', 'number', 'null', 'undefined', 'string'];
+const basicTypes = ["boolean", "number", "null", "undefined", "string"];
 
-const getKey = stack => stack.map(one => one.property).join('.');
+const getKey = stack => stack.map(one => one.property).join(".");
 
+const plain = value => JSON.stringify(value);
 
+// TODO: map this to a higher-level change in the way of:
+// { path: 'a.b.c', previous: { x: 10, y: 20 }, value: { x: 20, y: 30 }}
+const handleChange = stack => {
+  listeners.forEach(one => one(state, stack));
+};
 
 // Receives the ancestor stack and returns the Proxy() handler
 const getProxy = (stack = []) => (target, property) => {
-
   // To allow logging the state: https://github.com/nodejs/node/issues/10731
-  if (typeof property === 'symbol') {
+  if (typeof property === "symbol") {
     return target[property];
   }
 
   // Plain access, just return it
   const key = getKey([...stack, property]);
-  history.add({ type: 'read', key, value: target[property] });
+  // history.add({ type: 'read', key, value: target[property] });
   return target[property];
 };
 
-
-
 // Set values
 const setProxy = (stack = []) => (target, property, value) => {
-
   // Log it into the history
-  const type = typeof target[property] === 'undefined' ? 'create' : 'update';
-  history.add({ type, key: getKey([...stack, property]), value });
+  const type = typeof target[property] === "undefined" ? "create" : "update";
+  // history.add({ type, key: getKey([...stack, property]), value });
 
   // First of all set it in the beginning
+  const previous = target[property];
+  // We only want to set it if the value is different
+  if (plain(previous) === plain(value)) {
+    return true;
+  }
   target[property] = value;
+
+  const newStack = [...stack, { property, previous, value }];
 
   const proxify = (value, stack) => {
     if (basicTypes.includes(typeof value) || value === null) {
@@ -43,7 +52,7 @@ const setProxy = (stack = []) => (target, property, value) => {
     }
     if (Array.isArray(value)) {
       value = value.map((value, property, target) => {
-        return proxify(value, [...stack, { target, property, value }]);
+        return proxify(value, newStack);
       });
     }
     if (/^\{/.test(JSON.stringify(value))) {
@@ -61,49 +70,37 @@ const setProxy = (stack = []) => (target, property, value) => {
   };
 
   // Proxify the value in-depth
-  target[property] = proxify(value, [...stack, { target, property, value }]);
+  target[property] = proxify(value, newStack);
 
   // Trigger the root listener for any change
-  listeners.forEach(one => one(state));
+  // listeners.forEach(one => one(state));
+  handleChange(newStack);
 
   return true;
 };
 
 const delProxy = (stack = []) => (target, property) => {
-
-  history.add({ type: 'delete', key: getKey([...stack, property]) });
+  // history.add({ type: 'delete', key: getKey([...stack, property]) });
 
   // First of all set it in the beginning
   delete target[property];
 
   // Trigger the root listener for any change
-  listeners.forEach(one => one(state));
+  handleChange(stack);
+  // listeners.forEach(one => one(state));
 
   return true;
-}
+};
 
 // Main state function. Has to be defined here to be accessible inside
-const state = new Proxy({}, {
-  get: getProxy(),
-  set: setProxy(),
-  deleteProperty: delProxy()
-});
-
-const engine = {};
-
-engine.attach = (arg) => {
-  if (detached.length) {
-    listeners.push(...detached.splice(0, detached.length));
+const state = new Proxy(
+  {},
+  {
+    get: getProxy(),
+    set: setProxy(),
+    deleteProperty: delProxy()
   }
-  return state;
-};
+);
 
-engine.detatch = (temp) => {
-  detached.push(...listeners.splice(0, listeners.length));
-  // TODO: build the raw tree here
-  return state;
-};
-
-engine.listen = cb => listeners.push(cb);
-
-export default engine;
+export { listeners };
+export default state;
