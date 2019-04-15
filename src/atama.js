@@ -65,6 +65,7 @@ export const freeze = async (state, cb) => {
 export default {
   state,
   subscribe,
+  useStore,
   connect,
   init,
   merge,

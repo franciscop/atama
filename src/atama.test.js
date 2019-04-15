@@ -1,6 +1,5 @@
 import atama from "./atama";
 import { state, connect, subscribe } from "./atama";
-import { spy } from "sinon";
 
 const any = {
   object: expect.any(Object)
