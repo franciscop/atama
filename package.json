@@ -3,11 +3,11 @@
   "version": "0.3.0",
   "description": "A smart state manager",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
-  "main": "state.min.js",
+  "main": "atama.min.js",
   "repository": "git@github.com:franciscop/atama.git",
   "scripts": {
     "build": "rollup src/atama.js -o atama.js --name atama --output.format umd && terser atama.js -o atama.min.js --source-map-inline",
-    "gzip": "gzip -c state.min.js | wc -c && echo 'bytes' # Only for Unix",
+    "gzip": "gzip -c atama.min.js | wc -c && echo 'bytes' # Only for Unix",
     "test": "jest --coverage --forceExit",
     "watch": "jest --coverage --watch"
   },
