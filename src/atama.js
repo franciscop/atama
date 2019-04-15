@@ -40,9 +40,11 @@ export const subscribe = (...args) => {
 };
 
 export const useStore = (...args) => {
+  const { string: path, function: callback } = byType(args);
   const [_, update] = useState({});
   useEffect(() => subscribe(...args, data => update(data)));
-  return state;
+  if (!path) return state;
+  return path.split(".").reduce((state, part) => state[part], state);
 };
 
 export const connect = () => console.error("This API is not available yet");
