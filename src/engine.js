@@ -1,14 +1,7 @@
-// The current total history
-// import history from './old/history';
-
 // Where the different listeners are attached
 const listeners = [];
-const detached = [];
 
 const basicTypes = ["boolean", "number", "null", "undefined", "string"];
-
-const getKey = stack => stack.map(one => one.property).join(".");
-
 const plain = value => JSON.stringify(value);
 
 // TODO: map this to a higher-level change in the way of:
@@ -19,29 +12,31 @@ const handleChange = stack => {
 
 // Receives the ancestor stack and returns the Proxy() handler
 const getProxy = (stack = []) => (target, property) => {
+  // For the `for (let key of value)` iteration
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+  if (property === Symbol.iterator) {
+    const all = Object.values(target);
+    return function*() {
+      while (all.length) yield all.shift();
+    };
+  }
+
   // To allow logging the state: https://github.com/nodejs/node/issues/10731
   if (typeof property === "symbol") {
     return target[property];
   }
 
-  // Plain access, just return it
-  const key = getKey([...stack, property]);
-  // history.add({ type: 'read', key, value: target[property] });
   return target[property];
 };
 
 // Set values
 const setProxy = (stack = []) => (target, property, value) => {
-  // Log it into the history
-  const type = typeof target[property] === "undefined" ? "create" : "update";
-  // history.add({ type, key: getKey([...stack, property]), value });
-
-  // First of all set it in the beginning
   const previous = target[property];
   // We only want to set it if the value is different
   if (plain(previous) === plain(value)) {
     return true;
   }
+  // First of all set it in the beginning
   target[property] = value;
 
   const newStack = [...stack, { property, previous, value }];
@@ -73,21 +68,21 @@ const setProxy = (stack = []) => (target, property, value) => {
   target[property] = proxify(value, newStack);
 
   // Trigger the root listener for any change
-  // listeners.forEach(one => one(state));
   handleChange(newStack);
 
   return true;
 };
 
 const delProxy = (stack = []) => (target, property) => {
-  // history.add({ type: 'delete', key: getKey([...stack, property]) });
-
   // First of all set it in the beginning
-  delete target[property];
+  if (Array.isArray(target)) {
+    target.splice(property, 1);
+  } else {
+    delete target[property];
+  }
 
   // Trigger the root listener for any change
   handleChange(stack);
-  // listeners.forEach(one => one(state));
 
   return true;
 };

@@ -1,21 +1,34 @@
 # Atama
 
-> **Warning: Very early experiment!** The API described here doesn't even exist yet.
+> **Warning: Very early experiment!** Please look at the tests for a reliable API.
 
 > 頭|あたま|atama: head, the part where the brain is.
 
 A smart and testable state manager for Javascript or React:
 
 ```js
-import { connect } from 'atama';
+// With React Hooks
+import { useStore } from 'atama';
 
-const initial = { counter: 0 };
+export default () => {
+  const state = useStore({ count: 0 });
+  return (
+    <div onClick={e => state.count++}>
+      {state.count}
+    </div>
+  );
+};
+```
 
-export default connect(initial)(({ state }) => (
-  <button onClick={e => state.counter++}>
-    Add one! {state.counter}
-  </button>
-));
+```js
+// Plain ol' javascript
+import { state, subscribe } from 'atama';
+state.counter = 0;
+subscribe('counter', val => console.log(val));
+state.counter++;
+state.counter++;
+state.counter++;
+// Logs '1', '2', '3'
 ```
 
 Atama is focused on:
@@ -30,20 +43,19 @@ See [the comparison with Redux](#redux).
 
 ## Getting started
 
-To install Atama.js in your project use npm or yarn:
+To install Atama in your project use npm or yarn:
 
 ```bash
 npm install atama
 ```
 
-Then include it in any project where you want to use it. Since `atama` is really a group of functions, you can do that either way:
+Then include it in any project where you want to use it:
 
 ```js
-import atama from 'atama';
-import { connect, ...atama } from 'atama';
+import { state, connect, subscribe } from 'atama';
 ```
 
-The main function and most useful for React is `connect()`, so make sure to [read the documentation of `connect()`](#connect-). For plain-text javascript, the equivalent is `listen()`.
+The main function and most useful for React is `connect()`, so make sure to [read the documentation of `connect()`](#connect-). For plain-text javascript, the equivalent is `subscribe()`.
 
 
 
@@ -67,7 +79,7 @@ export default connect()(({ state }) => {
 });
 
 // Javascript
-listen()(({ state }) => {
+subscribe(state => {
   ...
 });
 ```
@@ -91,17 +103,19 @@ export default connect()(({ state }) => (
 While *you can* access the global state through `import { state } from 'atama';`, this is *not testable* so strongly prefer connected components and passing the current state to actions:
 
 ```js
-const login = await (state, email, password) => {
+const login = await (state, { email, password }) => {
   state.loading = true;
   try {
     state.user = await axios.post('/login', { email, password });
   } catch (error) {
     state.error = error;
+  } finally {
+    state.loading = false;
   }
 };
 
 export default connect({ user: false })(({ state }) => {
-  <form onSubmit={handle(data => login(state, data.email, data.password))}>
+  <form onSubmit={forn(data => login(state, data))}>
     // ...
   </form>
 });
@@ -113,7 +127,7 @@ Now you know every small detail that you need to know about the state. Feel free
 
 ### local
 
-### listen()
+### subscribe()
 
 ### connect()
 

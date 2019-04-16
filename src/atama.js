@@ -1,5 +1,6 @@
 // The engine that will bind listeners
 import state, { listeners } from "./engine";
+import deepmerge from "deepmerge";
 
 let useState = () => {};
 let useEffect = () => {};
@@ -15,21 +16,20 @@ export { state };
 const byType = args =>
   args.reduce((args, arg) => ({ ...args, [typeof arg]: arg }), {});
 
+const find = (state, path) => {
+  if (!path) return state;
+  return path.split(".").reduce((state, part) => state[part], state);
+}
+
 export const subscribe = (...args) => {
   const { string: path, function: callback } = byType(args);
-  const cb = (state, stack, previous) => {
-    const props = stack.map(({ property }) => property).join(".");
-    // If we are listening to a path and the modification is in the path
-    if (path) {
-      // We know this is not a change in our path
-      // subscribe('a.b') => state.a.b.c = 10 ~> keep comparing
-      // subscribe('a.b') => state.a = { b: 10 } ~> keep comparing
-      // subscribe('a.b') => state.d = 10 ~> skip
-      if (path.slice(0, props.length) !== props) {
-        return;
-      }
-    }
-    callback(state, stack);
+  let previous = JSON.stringify(find(state, path));
+  const cb = (state, stack) => {
+    const current = JSON.stringify(find(state, path));
+    // It has not actually changed skip calling the listeners
+    if (previous === current) return;
+    previous = current;
+    return callback(find(state, path), stack);
   };
   listeners.push(cb);
   return () => {
@@ -43,24 +43,20 @@ export const useStore = (...args) => {
   const { string: path, function: callback } = byType(args);
   const [_, update] = useState({});
   useEffect(() => subscribe(...args, data => update(data)));
-  if (!path) return state;
-  return path.split(".").reduce((state, part) => state[part], state);
+  return find(state, path);
 };
 
 export const connect = () => console.error("This API is not available yet");
 
-export const init = () => console.error("This API is not available yet");
-
 export const merge = (state, added = {}) =>
-  freeze(state, temp => {
-    Object.assign(temp, added);
-  });
+  freeze(state, temp => deepmerge(temp, added));
 
-export const freeze = async (state, cb) => {
-  const temp = engine.detach(state);
-  await cb(temp);
-  Object.assign(state, temp);
-  engine.attach(temp);
+// Note: NEEDS to be sync, otherwise we get into nasty race conditions
+export const freeze = (state, cb) => {
+  const temp = [...listeners];
+  listeners.splice(0, listeners.length);
+  cb(temp);
+  listeners.push(...temp);
 };
 
 // Export it as a default/object and as many args
@@ -68,8 +64,5 @@ export default {
   state,
   subscribe,
   useStore,
-  connect,
-  init,
-  merge,
-  freeze
+  connect
 };
