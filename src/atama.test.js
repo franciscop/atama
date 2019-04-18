@@ -1,5 +1,5 @@
 import atama from "./atama";
-import { state, merge, connect, subscribe } from "./atama";
+import { state, connect, subscribe } from "./atama";
 
 const any = {
   object: expect.any(Object)
