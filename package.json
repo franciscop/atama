@@ -1,6 +1,6 @@
 {
   "name": "atama",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A smart state manager",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "atama.min.js",
