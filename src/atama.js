@@ -1,6 +1,5 @@
 // The engine that will bind listeners
 import state, { listeners } from "./engine";
-import deepmerge from "deepmerge";
 
 let useState = () => {};
 let useEffect = () => {};
@@ -19,7 +18,7 @@ const byType = args =>
 const find = (state, path) => {
   if (!path) return state;
   return path.split(".").reduce((state, part) => state[part], state);
-}
+};
 
 export const subscribe = (...args) => {
   const { string: path, function: callback } = byType(args);
@@ -47,17 +46,6 @@ export const useStore = (...args) => {
 };
 
 export const connect = () => console.error("This API is not available yet");
-
-export const merge = (state, added = {}) =>
-  freeze(state, temp => deepmerge(temp, added));
-
-// Note: NEEDS to be sync, otherwise we get into nasty race conditions
-export const freeze = (state, cb) => {
-  const temp = [...listeners];
-  listeners.splice(0, listeners.length);
-  cb(temp);
-  listeners.push(...temp);
-};
 
 // Export it as a default/object and as many args
 export default {

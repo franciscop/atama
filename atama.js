@@ -4,16 +4,10 @@
   (global = global || self, factory(global.atama = {}));
 }(this, function (exports) { 'use strict';
 
-  // The current total history
-  // import history from './old/history';
-
   // Where the different listeners are attached
   const listeners = [];
 
   const basicTypes = ["boolean", "number", "null", "undefined", "string"];
-
-  const getKey = stack => stack.map(one => one.property).join(".");
-
   const plain = value => JSON.stringify(value);
 
   // TODO: map this to a higher-level change in the way of:
@@ -24,29 +18,31 @@
 
   // Receives the ancestor stack and returns the Proxy() handler
   const getProxy = (stack = []) => (target, property) => {
+    // For the `for (let key of value)` iteration
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+    if (property === Symbol.iterator) {
+      const all = Object.values(target);
+      return function*() {
+        while (all.length) yield all.shift();
+      };
+    }
+
     // To allow logging the state: https://github.com/nodejs/node/issues/10731
     if (typeof property === "symbol") {
       return target[property];
     }
 
-    // Plain access, just return it
-    const key = getKey([...stack, property]);
-    // history.add({ type: 'read', key, value: target[property] });
     return target[property];
   };
 
   // Set values
   const setProxy = (stack = []) => (target, property, value) => {
-    // Log it into the history
-    const type = typeof target[property] === "undefined" ? "create" : "update";
-    // history.add({ type, key: getKey([...stack, property]), value });
-
-    // First of all set it in the beginning
     const previous = target[property];
     // We only want to set it if the value is different
     if (plain(previous) === plain(value)) {
       return true;
     }
+    // First of all set it in the beginning
     target[property] = value;
 
     const newStack = [...stack, { property, previous, value }];
@@ -78,21 +74,21 @@
     target[property] = proxify(value, newStack);
 
     // Trigger the root listener for any change
-    // listeners.forEach(one => one(state));
     handleChange(newStack);
 
     return true;
   };
 
   const delProxy = (stack = []) => (target, property) => {
-    // history.add({ type: 'delete', key: getKey([...stack, property]) });
-
     // First of all set it in the beginning
-    delete target[property];
+    if (Array.isArray(target)) {
+      target.splice(property, 1);
+    } else {
+      delete target[property];
+    }
 
     // Trigger the root listener for any change
     handleChange(stack);
-    // listeners.forEach(one => one(state));
 
     return true;
   };
@@ -121,21 +117,20 @@
   const byType = args =>
     args.reduce((args, arg) => ({ ...args, [typeof arg]: arg }), {});
 
+  const find = (state, path) => {
+    if (!path) return state;
+    return path.split(".").reduce((state, part) => state[part], state);
+  };
+
   const subscribe = (...args) => {
     const { string: path, function: callback } = byType(args);
-    const cb = (state, stack, previous) => {
-      const props = stack.map(({ property }) => property).join(".");
-      // If we are listening to a path and the modification is in the path
-      if (path) {
-        // We know this is not a change in our path
-        // subscribe('a.b') => state.a.b.c = 10 ~> keep comparing
-        // subscribe('a.b') => state.a = { b: 10 } ~> keep comparing
-        // subscribe('a.b') => state.d = 10 ~> skip
-        if (path.slice(0, props.length) !== props) {
-          return;
-        }
-      }
-      callback(state, stack);
+    let previous = JSON.stringify(find(state, path));
+    const cb = (state, stack) => {
+      const current = JSON.stringify(find(state, path));
+      // It has not actually changed skip calling the listeners
+      if (previous === current) return;
+      previous = current;
+      return callback(find(state, path), stack);
     };
     listeners.push(cb);
     return () => {
@@ -146,42 +141,24 @@
   };
 
   const useStore = (...args) => {
+    const { string: path, function: callback } = byType(args);
     const [_, update] = useState({});
     useEffect(() => subscribe(...args, data => update(data)));
-    return state;
+    return find(state, path);
   };
 
   const connect = () => console.error("This API is not available yet");
-
-  const init = () => console.error("This API is not available yet");
-
-  const merge = (state, added = {}) =>
-    freeze(state, temp => {
-      Object.assign(temp, added);
-    });
-
-  const freeze = async (state, cb) => {
-    const temp = engine.detach(state);
-    await cb(temp);
-    Object.assign(state, temp);
-    engine.attach(temp);
-  };
 
   // Export it as a default/object and as many args
   var atama = {
     state,
     subscribe,
-    connect,
-    init,
-    merge,
-    freeze
+    useStore,
+    connect
   };
 
   exports.connect = connect;
   exports.default = atama;
-  exports.freeze = freeze;
-  exports.init = init;
-  exports.merge = merge;
   exports.state = state;
   exports.subscribe = subscribe;
   exports.useStore = useStore;
