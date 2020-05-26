@@ -1,6 +1,6 @@
 # Atama
 
-> **Warning: Very early experiment!** Please look at the tests for a reliable API.
+> **Warning: discontinued!** please check out [my other library Statux](https://statux.dev/) instead.
 
 > 頭|あたま|atama: head, the part where the brain is.
 
